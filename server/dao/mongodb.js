@@ -4,10 +4,6 @@ const { env } = process
 
 const config = {
     url: 'mongodb://localhost:27017/todo',
-    // options: {
-    //     poolSize: 100,
-    //     auto_reconnect: true
-    // },
     dbName: 'todo',
 }
 module.exports = async function (app) {
