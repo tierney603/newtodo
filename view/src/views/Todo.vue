@@ -17,19 +17,15 @@
       <!-- $emit中的不用传值 -->
       <div class="showlist">
         <p v-for="li in showlist" :key="li._id">
-          <input
-            type="checkbox"
-            :checked="li.check"
-            @click="checkclick(li._id)"
-          />
+          <input type="checkbox" :checked="li.check" @click="checkclick(li)" />
           {{ li.value }}
           <span class="listX" @click="deletelist(li._id)">x</span>
         </p>
       </div>
       <div class="btnsBox">
-        <button plain @click="allclick">全部</button>
-        <button plain @click="completeclick">已完成</button>
-        <button plain @click="unfinishedclick">未完成</button>
+        <button plain @click="getTodo()">全部</button>
+        <button plain @click="getTodo(true)">已完成</button>
+        <button plain @click="getTodo(false)">未完成</button>
         <button plain @click="emptyclick">清除全部</button>
       </div>
     </div>
@@ -44,14 +40,25 @@ export default {
   data() {
     return {
       inpvalue: "",
-      showlist: [
-        { value: "吃饭了嘛！", check: true, _id: 1 },
-        { value: "睡觉了嘛！", check: false, _id: 2 },
-        { value: "锻炼了嘛！", check: true, _id: 3 },
-      ],
+      showlist: [],
     };
   },
+  mounted() {
+    this.getTodo();
+  },
   methods: {
+    // 获取数据
+    getTodo(check) {
+      console.log(check);
+      axios
+        .get("/todo/getTodo", { params: { check: check } })
+        .then((res) => {
+          this.showlist = res.data;
+        })
+        .catch(function (err) {
+          console.log(err);
+        });
+    },
     addList() {
       // 添加
       if (this.inpvalue !== "") {
@@ -77,9 +84,9 @@ export default {
       return;
     },
     // check
-    checkclick(id) {
+    checkclick(i) {
       axios
-        .post("/todo/check", id)
+        .post("/todo/check", i)
         .then((res) => {
           console.log(res);
         })
@@ -87,23 +94,23 @@ export default {
           console.log(err);
         });
       this.showlist.find((v) => {
-        if (v._id == id) {
+        if (v._id == i._id) {
           v.check = !v.check;
         }
         console.log(this.showlist);
       });
     },
     // 删除
-    deletelist(id) {
+    deletelist(i) {
       axios
-        .post("/todo/empty", id)
+        .post("/todo/deletei", { id: i })
         .then((res) => {
           console.log(res);
         })
         .catch((err) => {
           console.log(err);
         });
-      this.showlist = this.showlist.filter((v) => v._id !== id);
+      this.showlist = this.showlist.filter((v) => v._id !== i);
     },
     emptyclick() {
       axios
@@ -120,7 +127,7 @@ export default {
     allDone() {
       console.log("done!");
       axios
-        .get("/todo/alldone")
+        .post("/todo/alldone")
         .then((res) => {
           console.log(res.data);
         })
@@ -130,49 +137,6 @@ export default {
         });
       this.showlist.forEach((v) => (v.check = true));
     },
-    //   全部
-    allclick() {
-      axios
-        .get("/todo/all")
-        .then((res) => {
-          // this.showlist = "";
-          this.showlist = res.data;
-          // console.log(this.showlist);
-        })
-        .catch(function (err) {
-          // 请求失败处理
-          console.log(err);
-        });
-    },
-    // 已完成
-    completeclick() {
-      axios
-        .get("/todo/complete")
-        .then((res) => {
-          this.showlist = res.data;
-          console.log(this.showlist);
-        })
-        .catch(function (err) {
-          // 请求失败处理
-          console.log(err);
-        });
-    },
-    // 未完成
-    unfinishedclick() {
-      axios
-        .get("/todo/unfinished")
-        .then((res) => {
-          this.showlist = res.data;
-          console.log(this.showlist);
-        })
-        .catch(function (err) {
-          // 请求失败处理
-          console.log(err);
-        });
-    },
-  },
-  mounted() {
-    this.allclick();
   },
 };
 </script>

@@ -10,18 +10,12 @@ const config = {
     // },
     dbName: 'todo',
 }
-module.exports = function (app) {
+module.exports = async function (app) {
     const mongourl = config.url
     if (!mongourl || typeof mongourl !== 'string')
         throw new err("the 'logdb' config need a string value with key ")
-    const promise = MongoClient.connect(mongourl, Object.assign({ useNewUrlParser: true },
-        (client) => {
-            const db = config.dbName ? client.db(config.dbName) : client.collection ? client : null
-            if (!db) throw new Error("the 'logdb' config need a string value with key 'dbName'")
-            db.executeDbAdminCommand({ setFeatureCompatibilityVersion: '3.6' })
-            return db
-        },
-    )
-    )
-    app.set('dbClient', promise)
+    const client = await MongoClient.connect(config.url)
+    const db = client.db('todo')
+    app.set('dbClient', db)
+
 }
